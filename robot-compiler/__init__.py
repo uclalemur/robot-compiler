@@ -14,6 +14,8 @@ bl_info = {
     "category": "Object",
 }
 
+
+# TODO: pass pylint
 class RobotCompilerScreen(bpy.types.Operator):
     bl_idname = "robot_compiler.screen"        # unique identifier for buttons and menu items to reference.
     bl_label = "Add Robot Compiler Screen"         # display name in the interface.

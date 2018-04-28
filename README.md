@@ -1,2 +1,2 @@
 # robot-compiler
-Robotics design and fabrication tool for Blender
+Robotics codesign and fabrication environment 

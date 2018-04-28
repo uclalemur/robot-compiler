@@ -15,6 +15,7 @@ class Material(Enum):
     cardboard = "cardboard"
 
 
+# TODO: pass pylint
 class Regular_Ngon():
     def __init__(self, name, num_sides, side_length):
         # TODO: validate these variables to be nonneg + normal values
