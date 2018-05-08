@@ -381,61 +381,85 @@ Resources and Examples
 =============================
 *   Parameterized Blender
 
-    *   Sverchok https://wiki.blender.org/index.php/Extensions:2.6/Py/Scripts/Nodes/Sverchok
+    *   Sverchok_ 
+    
+        .. _Sverchok: https://wiki.blender.org/index.php/Extensions:2.6/Py/Scripts/Nodes/Sverchok
 
-    *   Archimesh https://youtu.be/WeAlm6_jVDY
+    *   Archimesh_ 
+    
+        .. _Archimesh: https://youtu.be/WeAlm6_jVDY
 
-    *   Archipack https://www.youtube.com/watch?v=nf8QHISjRLY https://github.com/s-leger/archipack/wiki/Parametric-Objects-developper-guide
+    *  Archipack_
+    
+        .. _Archipack: https://www.youtube.com/watch?v=nf8QHISjRLY https://github.com/s-leger/archipack/wiki/Parametric-Objects-developper-guide
+
+    *   `Generating mesh`_
+
+        .. _`Generating mesh`: http://sinestesia.co/blog/tutorials/python-2d-grid/
+
+    *   `Modifying mesh`_
+
+        .. _`Modifying mesh`: https://stackoverflow.com/questions/37808840/selecting-a-face-and-extruding-a-cube-in-blender-via-python-api
+
+    *   `Force change mode`_
+
+        .. _`Force change mode`: https://blender.stackexchange.com/questions/27482/is-there-a-way-to-explicitly-set-the-mode-in-python
 
 *   UI/UX Overridden Example
 
-    *   Fluid Designer https://www.microvellum.com/dt_gallery/fluid-designer-screen-shots/
+    *   `Fluid Designer`_
+    
+        .. _`Fluid Designer`: https://www.microvellum.com/dt_gallery/fluid-designer-screen-shots/
 
-*   Overriding User Prefs https://blender.stackexchange.com/questions/283/changing-user-preferences-via-console
+    *   `Overriding User Prefs`_ 
 
-*   Tutorial to override Blender UI in Python
+        .. _`Overriding User Prefs`: https://blender.stackexchange.com/questions/283/changing-user-preferences-via-console
 
-    *   https://www.youtube.com/watch?v=2j75AM1Mttc
+    *   `Tutorial to override Blender UI in Python`_
 
-*   Graphical Programming Sample
+        .. _`Tutorial to override Blender UI in Python`: https://www.youtube.com/watch?v=2j75AM1Mttc
 
-    *   https://www.youtube.com/watch?v=B32gktrRvKs
+    *   `Graphical Programming Sample`_
 
-*   Generating mesh
+        .. _`Graphical Programming Sample`: https://www.youtube.com/watch?v=B32gktrRvKs
 
-    *   http://sinestesia.co/blog/tutorials/python-2d-grid/
+*   Robots
 
-*   Modifying mesh
+    *   `IBM TJBot`_
 
-    *   https://stackoverflow.com/questions/37808840/selecting-a-face-and-extruding-a-cube-in-blender-via-python-api
+        .. _`IBM TJBot`: http://delivery.acm.org/10.1145/3060000/3052965/ea381-dibia.pdf?ip=131.179.2.204&id=3052965&acc=ACTIVE%20SERVICE&key=CA367851C7E3CE77%2E79535EF926D6BC05%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35&__acm__=1525810293_e007cd17051356d03b82c22e1c0dafd5
 
-*   Force change mode
+    *   `Robot Designer demo; has geometry, muscles, kinematics, sensors, constraints, etc`_
+        
+        .. _`Robot Designer demo; has geometry, muscles, kinematics, sensors, constraints, etc`: https://www.youtube.com/watch?v=_ii0CVzVcsA&list=PLFfa5EHopIFosLhZa3HxGQzo1JyM-MhUq
 
-    *   https://blender.stackexchange.com/questions/27482/is-there-a-way-to-explicitly-set-the-mode-in-python
+    *   `Reading from Arduino into Blender`_
+        
+        .. _`Reading from Arduino into Blender`: https://www.youtube.com/watch?v=tyH8HswHh0Q
 
-*   IBM TJBot
+    *   `Control physical robot arm from within Blender`_
 
-    *   http://delivery.acm.org/10.1145/3060000/3052965/ea381-dibia.pdf?ip=131.179.2.204&id=3052965&acc=ACTIVE%20SERVICE&key=CA367851C7E3CE77%2E79535EF926D6BC05%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35&__acm__=1525810293_e007cd17051356d03b82c22e1c0dafd5
+        .. _`Control physical robot arm from within Blender`: http://justindailey.blogspot.com/2011/03/real-time-controlled-robotic-arm.html
 
-*   Blender paper export addon https://wiki.blender.org/index.php/Extensions:2.6/Py/Scripts/Import-Export/Paper_Model
+    *   `Robot with multiple motors being controlled from within Blender`_ 
+        
+        .. _`Robot with multiple motors being controlled from within Blender`: https://www.youtube.com/watch?v=XqMHoJ-ihdw
 
-*   Robot Designer demo; has geometry, muscles, kinematics, sensors, constraints, etc https://www.youtube.com/watch?v=_ii0CVzVcsA&list=PLFfa5EHopIFosLhZa3HxGQzo1JyM-MhUq
+    *   `Controlling 3D Printed Thor arm from within Blender`_
 
-*   Reading from Arduino into Blender https://www.youtube.com/watch?v=tyH8HswHh0Q
+        .. _`Controlling 3D Printed Thor arm from within Blender`: https://www.youtube.com/watch?v=DmqUdcp0udM
 
-*   Control physical robot arm from within Blender http://justindailey.blogspot.com/2011/03/real-time-controlled-robotic-arm.html
+    *   `Controlling Arduino + robot arm from Blender`_ 
 
-*   Robot with multiple motors being controlled from within Blender https://www.youtube.com/watch?v=XqMHoJ-ihdw
+        .. _`Controlling Arduino + robot arm from Blender`: https://www.youtube.com/watch?v=mHZBFZSklqk
 
-*   Controlling 3D Printed Thor arm from within Blender https://www.youtube.com/watch?v=DmqUdcp0udM
+    *   `Demo of 3D cube + other shapes being exported to SVG for physical fabrication; includes tabs`_
 
-*   Controlling Arduino + robot arm from Blender https://www.youtube.com/watch?v=mHZBFZSklqk
+        .. _`Demo of 3D cube + other shapes being exported to SVG for physical fabrication; includes tabs`_: https://www.youtube.com/watch?v=s123RTkCi0M
 
-*   Demo of 3D cube + other shapes being exported to SVG for physical fabrication; includes tabs https://www.youtube.com/watch?v=s123RTkCi0M
-
-*   Physical paper head https://www.youtube.com/watch?v=Y6ECUuwHA4s - Demo of virtual head -> printable SVG with tabs
-
-*   Many other research labs have used Blender for robotics <link>
+    *   `Physical paper head`_
+        
+        .. _`Physical paper head`: https://www.youtube.com/watch?v=Y6ECUuwHA4s
 
 FAQ
 =============================
