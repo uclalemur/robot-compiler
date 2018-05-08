@@ -120,6 +120,7 @@ Make
 Sample
 ====================================
 Code::
+
     from roco.api.component import Component
     c = Component()
     c.add_subcomponent("R1", "Rectangle")
