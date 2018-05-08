@@ -245,7 +245,6 @@ Architectural Model
 *   Documentation through Sphinx + RTD; Github for main repo; GitLabs as backup
 *   No install/web accessibility through AWS AppStream 2.0
 
-
 Abstraction Model
 =============================
 
@@ -274,8 +273,6 @@ Abstraction Model
                 *   Prerequisites: other feature(s) of a different type that this feature require to exist?
 
                 *   Dependencies: other feature(s) of the same type that this feature requires to actually work
-
-
 
         *   Field: Mechanical
 
@@ -379,18 +376,19 @@ Implementation Model
 
 Resources and Examples
 =============================
+
 *   Parameterized Blender
 
     *   Sverchok_ 
-    
+
         .. _Sverchok: https://wiki.blender.org/index.php/Extensions:2.6/Py/Scripts/Nodes/Sverchok
 
     *   Archimesh_ 
-    
+
         .. _Archimesh: https://youtu.be/WeAlm6_jVDY
 
-    *  Archipack_
-    
+    *   Archipack_
+
         .. _Archipack: https://www.youtube.com/watch?v=nf8QHISjRLY https://github.com/s-leger/archipack/wiki/Parametric-Objects-developper-guide
 
     *   `Generating mesh`_
@@ -489,7 +487,7 @@ FAQ
 
     *   Where is startup file?::
 
-cd /Users/quentintruong/Library/Application\ Support/Blender/2.79/config
+            cd /Users/quentintruong/Library/Application\ Support/Blender/2.79/config
 
 Blender API Tips
 =============================
