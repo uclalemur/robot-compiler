@@ -453,7 +453,7 @@ Resources and Examples
 
     *   `Demo of 3D cube + other shapes being exported to SVG for physical fabrication; includes tabs`_
 
-        .. _`Demo of 3D cube + other shapes being exported to SVG for physical fabrication; includes tabs`_: https://www.youtube.com/watch?v=s123RTkCi0M
+        .. _`Demo of 3D cube + other shapes being exported to SVG for physical fabrication; includes tabs`: https://www.youtube.com/watch?v=s123RTkCi0M
 
     *   `Physical paper head`_
         
@@ -461,33 +461,31 @@ Resources and Examples
 
 FAQ
 =============================
-*   How do I start Blender on Mac with terminal available for debugging?
+*   How do I start Blender on Mac with terminal available for debugging?::
 
-    *   https://docs.blender.org/manual/en/dev/render/workflows/command_line.html::
+        cd /Applications/Blender
+        ./blender.app/Contents/MacOS/blender
 
-            cd /Applications/Blender
-            ./blender.app/Contents/MacOS/blender
+*   How do I install Sympy in Blender for development? (Mac)::
 
-    *   How do I install Sympy in Blender for development? (Mac)::
-   
-            cd /Applications/Blender/blender.app/Contents/Resources/2.79/python/lib/python3.5/site-packages
-            git clone git://github.com/sympy/sympy.git
-            mv sympy/sympy sympy2
-            rm -rf sympy
-            mv sympy2 sympy
-            git clone https://github.com/fredrik-johansson/mpmath.git
-            mv mpmath/mpmath mpmath2
-            rm -rf mpmath
-            mv mpmath2 mpmath
+        cd /Applications/Blender/blender.app/Contents/Resources/2.79/python/lib/python3.5/site-packages
+        git clone git://github.com/sympy/sympy.git
+        mv sympy/sympy sympy2
+        rm -rf sympy
+        mv sympy2 sympy
+        git clone https://github.com/fredrik-johansson/mpmath.git
+        mv mpmath/mpmath mpmath2
+        rm -rf mpmath
+        mv mpmath2 mpmath
 
-    *   How do I test that Sympy installed correctly?::
+*   How do I test that Sympy installed correctly?::
 
-            from sympy import   x = Symbol('x')
-            limit(sin(x)/x, x, 0)
+        from sympy import   x = Symbol('x')
+        limit(sin(x)/x, x, 0)
 
-    *   Where is startup file?::
+*   Where is startup file?::
 
-            cd /Users/quentintruong/Library/Application\ Support/Blender/2.79/config
+        cd /Users/quentintruong/Library/Application\ Support/Blender/2.79/config
 
 Blender API Tips
 =============================
