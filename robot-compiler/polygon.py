@@ -83,16 +83,10 @@ class Polygon():
         constraint = "{0}{1}{2}".format(self.num_sides - 2, " * pi - ", "-".join(self.angle_names))
         self.angle_constraints.append(parse_expr(constraint))
 
-        print(self.side_constraints)
-        print(self.angle_constraints)
-
         self.faces.append(tuple(range(0, self.num_sides)))
         
     def solve_geometry(self):
         print("Polygon.solve_geometry()")
-
-        print(self.side_constraints + self.angle_constraints)
-        print(self.side_symbols + self.angle_symbols)
 
         # Combined solve bc angles may rely on sides and vv        
         sol = solve(self.side_constraints + self.angle_constraints, self.side_symbols + self.angle_symbols, dict=True)
@@ -112,12 +106,9 @@ class Polygon():
     def generate_vertices(self):
         print("Polygon.generate_vertices()")
 
-        self.vertices = [(0,0,0)]
         curr_vertex = (0,0,0)
+        self.vertices = [curr_vertex]
         angle_from_x = 0
-        
-        print(self.sides)
-        print(self.angles)
         
         for index in range(0, self.num_sides - 1):
             x = curr_vertex[0] + cos(angle_from_x) * self.sides[index]
@@ -133,14 +124,6 @@ class Polygon():
         x = curr_vertex[0] + cos(angle_from_x) * self.sides[self.num_sides - 1]
         y = curr_vertex[1] + sin(angle_from_x) * self.sides[self.num_sides - 1]
         z = curr_vertex[2] + 0
-
-        print(self.vertices[0][0])
-        print(self.vertices[0][1])
-        print(self.vertices[0][2])
-        
-        print(x)
-        print(y)
-        print(z)
         
         if not isclose(x, self.vertices[0][0], abs_tol=1e-10) or not isclose(y, self.vertices[0][1], abs_tol=1e-10) or not isclose(z, self.vertices[0][2], abs_tol=1e-10):
             print("Constraints not solvable")
@@ -182,17 +165,57 @@ class Polygon():
     def generate_object(self):
         # Create Object and link to scene
         self.mesh = bpy.data.meshes.new("{0}_{1}".format(self.name, "mesh"))
-        self.object = bpy.data.objects.new("{0}_{1}".format(self.name, "object"), self.mesh)
+        self.object = bpy.data.objects.new("{0}".format(self.name), self.mesh)
         bpy.context.scene.objects.link(self.object)
         self.bmesh.to_mesh(self.mesh)
 
     def clean_up(self):
         # Select the object
         bpy.context.scene.objects.active = self.object
-        self.object.select = True
+        self.object.select = False
+
+    def get_vertices(self, side_name):
+        # TODO: index checking
+        vertex_a = self.vertices[self.side_names.index(side_name)]
+        vertex_b = self.vertices[(self.side_names.index(side_name) + 1) % len(self.side_names)]
+        
+        return vertex_a, vertex_b
+
+    def connect(self, other, my_side_name, other_side_name):
+        # TODO: scaling
+        bpy.context.scene.objects.active = other.object
+        other.object.select = True
+        
+        poly_v0, poly_v1 = self.get_vertices(my_side_name)
+        other_v0, other_v1 = other.get_vertices(other_side_name)
+
+        bpy.context.scene.cursor_location = ((other_v0[0] + other_v1[0]) /2, (other_v0[1] + other_v1[1]) / 2, (other_v0[2] + other_v1[2]) / 2)
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+
+        bpy.data.objects[other.name].location[0] = (poly_v0[0] + poly_v1[0]) / 2
+        bpy.data.objects[other.name].location[1] = (poly_v0[1] + poly_v1[1]) / 2
+        bpy.data.objects[other.name].location[2] = (poly_v0[2] + poly_v1[2]) / 2
 
 
 if __name__ == '__main__':
+    poly = Polygon("poly", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly.set_constraints(["1", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    if poly.solve_geometry():
+        if poly.generate_vertices():
+            poly.generate_bmesh()
+            poly.generate_object()
+            poly.clean_up()
+            
+    poly_b = Polygon("poly_b", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_b.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    if poly_b.solve_geometry():
+        if poly_b.generate_vertices():
+            poly_b.generate_bmesh()
+            poly_b.generate_object()
+            poly_b.clean_up()
+        
+    poly_b.connect(poly, poly_b.side_names[0], poly.side_names[0])
+
     poly = Polygon("triangle_345", ["a", "b", "c"], ["ab", "bc", "ca"])
     poly.set_constraints(["3", "4", "5"], ["pi/2", "atan(a/b)", "pi-ab-bc"])
     if poly.solve_geometry():
@@ -241,6 +264,4 @@ if __name__ == '__main__':
             poly.generate_object()
             poly.clean_up()
 
-
     #nonlinsolve([parse_expr("a-b"), parse_expr("c-(a**2+b**2)**(1/2)"), parse_expr("c-1")], [a, b, c])
-            

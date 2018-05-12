@@ -33,11 +33,13 @@ User Flow
     *   Click/type link to home page
 
     *   Click link to access RoCo application through browser
+    
 *   Tutorial (Optional)
 
     *   Guides user in creating a simple two wheeled robot
 
     *   Explains interface through highlighting and popup textboxes
+
 *   Design
 
     *   Design wheeled robot
@@ -89,6 +91,7 @@ User Flow
         *   Connect function to servo (Electroprogrammatic)
 
     *   Different orderings must be permissible
+
 *   Fabricate
 
     *   Paper robot
@@ -136,6 +139,7 @@ User Flow
             *   Text files for MCU
 
             *   Text files for web controller
+
 *   Simulate
 
     *   ...
@@ -147,6 +151,7 @@ Related/Alternative Approaches
     *   First version of RoCo relied on using an algorithm to input edge/angle constraints and output nonlinear equations representing each vertex coordinate. This resulted in a system of 10^2 nonlinear equations for simple robots, growing exponentially; thus, it is infeasible to solve.
 
     *   We will embed edge/angle constraints inside RoCo's representation of geometry. Then we will input the edge/angle constraints into Sympy which will output edge lengths and coordinates. Then we will input edge lengths/angles into a BFS-style algorithm to generate vertex coordinates.
+
 *   Geometry Generation
 
     *   It is not clear whether it is better to compose 3D object from many polygons or to create parameterized 3D objects as a primitive.
@@ -164,6 +169,7 @@ Related/Alternative Approaches
     *   Vertex has list of (edge, angle) pairs. Angle is xyz rotation. edge is an object with a length and has list of vertices. when doing dfs to get vertices, maintain knowledge of angle. 
 
     *   a lot of these approaches have problem of not knowing what is a face and what isnt.
+
 *   Parameterization
 
     *   Parameterization in RoCo was previously treated at the Component level (affecting geometry, electronics, and software).
@@ -241,8 +247,11 @@ Architectural Model
         *   Mechanical/Electroprogrammatic
 
             *   Control physical robot through adjusting values within Blender
+
 *   Python Addon to Blender using Sympy
+
 *   Documentation through Sphinx + RTD; Github for main repo; GitLabs as backup
+
 *   No install/web accessibility through AWS AppStream 2.0
 
 Abstraction Model
@@ -465,8 +474,7 @@ FAQ
 
     *   https://docs.blender.org/manual/en/dev/render/workflows/command_line.html::
 
-            cd /Applications/Blender
-            ./blender.app/Contents/MacOS/blender
+            /Applications/Blender/blender.app/Contents/MacOS/blender
 
     *   How do I install Sympy in Blender for development? (Mac)::
    
