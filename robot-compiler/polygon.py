@@ -4,12 +4,15 @@ from enum import Enum
 # Blender Imports
 import bpy
 import bmesh
-#import mathutils
+import mathutils
+from mathutils import Vector
+from math import degrees, pi
 
 # Library Imports
 from sympy import *
 from sympy.parsing.sympy_parser import parse_expr
 from math import *
+import numpy
 
 class Material(Enum):
     paper = "paper"
@@ -170,11 +173,11 @@ class Polygon():
         self.bmesh.to_mesh(self.mesh)
 
     def clean_up(self):
-        # Select the object
-        bpy.context.scene.objects.active = self.object
-        self.object.select = False
+        # Deselect all
+        #bpy.context.scene.objects.active = other.object
+        bpy.ops.object.select_all(action='DESELECT')
 
-    def get_vertices(self, side_name):
+    def side_name_to_vertices(self, side_name):
         # TODO: index checking
         vertex_a = self.vertices[self.side_names.index(side_name)]
         vertex_b = self.vertices[(self.side_names.index(side_name) + 1) % len(self.side_names)]
@@ -182,24 +185,38 @@ class Polygon():
         return vertex_a, vertex_b
 
     def connect(self, other, my_side_name, other_side_name):
-        # TODO: scaling
-        bpy.context.scene.objects.active = other.object
+        # Move center of other.other_side_name to center of self.my_side_name
+        # TODO: Clean up this messy code
+        # TODO: Make it work for different orientations
+        # TODO: Decide on whether we want scaling or to propagate it
+
         other.object.select = True
         
-        poly_v0, poly_v1 = self.get_vertices(my_side_name)
-        other_v0, other_v1 = other.get_vertices(other_side_name)
+        poly_v0, poly_v1 = self.side_name_to_vertices(my_side_name)
+        other_v0, other_v1 = other.side_name_to_vertices(other_side_name)
 
         bpy.context.scene.cursor_location = ((other_v0[0] + other_v1[0]) /2, (other_v0[1] + other_v1[1]) / 2, (other_v0[2] + other_v1[2]) / 2)
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+
+        poly_vector = Vector(tuple(numpy.subtract(poly_v0, poly_v1)))
+        other_vector = Vector(tuple(numpy.subtract(other_v1, other_v0)))
+        
+        other.object.rotation_euler[2] = poly_vector.xy.angle_signed(other_vector.xy, 0.0)
 
         bpy.data.objects[other.name].location[0] = (poly_v0[0] + poly_v1[0]) / 2
         bpy.data.objects[other.name].location[1] = (poly_v0[1] + poly_v1[1]) / 2
         bpy.data.objects[other.name].location[2] = (poly_v0[2] + poly_v1[2]) / 2
 
+        bpy.data.objects[other.name].scale[0] = poly_vector.magnitude / other_vector.magnitude
+        bpy.data.objects[other.name].scale[1] = poly_vector.magnitude / other_vector.magnitude
+        bpy.data.objects[other.name].scale[2] = poly_vector.magnitude / other_vector.magnitude
+        
+        self.clean_up()
+
 
 if __name__ == '__main__':
     poly = Polygon("poly", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
-    poly.set_constraints(["1", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    poly.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
     if poly.solve_geometry():
         if poly.generate_vertices():
             poly.generate_bmesh()
@@ -207,15 +224,45 @@ if __name__ == '__main__':
             poly.clean_up()
             
     poly_b = Polygon("poly_b", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
-    poly_b.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    poly_b.set_constraints(["1", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
     if poly_b.solve_geometry():
         if poly_b.generate_vertices():
             poly_b.generate_bmesh()
             poly_b.generate_object()
             poly_b.clean_up()
-        
-    poly_b.connect(poly, poly_b.side_names[0], poly.side_names[0])
+            
+    poly_c = Polygon("quad_trap", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_c.set_constraints(["2.5", "2*a", "a", "b-2*a*sin(cd-pi/2)"], ["pi/3", "ab", "pi-ab", "cd"])
+    if poly_c.solve_geometry():
+        if poly_c.generate_vertices():
+            poly_c.generate_bmesh()
+            poly_c.generate_object()
+            poly_c.clean_up()
+            
+    poly_d = Polygon("triangle_345", ["a", "b", "c"], ["ab", "bc", "ca"])
+    poly_d.set_constraints(["3", "4", "5"], ["pi/2", "atan(a/b)", "pi-ab-bc"])
+    if poly_d.solve_geometry():
+        if poly_d.generate_vertices():
+            poly_d.generate_bmesh()
+            poly_d.generate_object()
+            poly_d.clean_up()
+            
+    poly_e = Polygon("quad_rhombus", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_e.set_constraints(["1", "a", "a", "b"], ["pi/3", "pi-ab", "ab", "bc"])
+    if poly_e.solve_geometry():
+        if poly_e.generate_vertices():
+            poly_e.generate_bmesh()
+            poly_e.generate_object()
+            poly_e.clean_up()        
+    
+    poly.connect(poly_b, poly.side_names[0], poly_b.side_names[0])
+    poly.connect(poly_c, poly.side_names[1], poly_c.side_names[0])
+    poly.connect(poly_d, poly.side_names[2], poly_d.side_names[0])
+    poly.connect(poly_e, poly.side_names[3], poly_e.side_names[0])
 
+
+
+    """
     poly = Polygon("triangle_345", ["a", "b", "c"], ["ab", "bc", "ca"])
     poly.set_constraints(["3", "4", "5"], ["pi/2", "atan(a/b)", "pi-ab-bc"])
     if poly.solve_geometry():
@@ -265,3 +312,4 @@ if __name__ == '__main__':
             poly.clean_up()
 
     #nonlinsolve([parse_expr("a-b"), parse_expr("c-(a**2+b**2)**(1/2)"), parse_expr("c-1")], [a, b, c])
+    """
