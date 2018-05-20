@@ -1,3 +1,27 @@
+Contents
+=============================
+`Goal`_
+
+`Audience`_
+
+`User Flow`_
+
+`Related Works`_
+
+`Alternative Approaches`_
+
+`Architectural Model`_
+
+`Abstraction Model`_
+
+`Implementation Model`_
+
+`Resources and Examples`_
+
+`FAQ`_
+
+`Blender API Tips`_
+
 Goal
 =============================
 *   Enable the general public to design and fabricate robots through automated processes
@@ -144,37 +168,31 @@ User Flow
 
     *   ...
 
-Related/Alternative Approaches
+Related Works
+=============================
+*   Robogami_
+
+    .. _Robogami: http://cfg.mit.edu/content/interactive-robogami-end-end-system-design-robots-ground-locomotion
+
+Alternative Approaches
 =============================
 *   Geometry Generation
 
-    *   First version of RoCo relied on using an algorithm to input edge/angle constraints and output nonlinear equations representing each vertex coordinate. This resulted in a system of 10^2 nonlinear equations for simple robots, growing exponentially; thus, it is infeasible to solve.
-
-    *   We will embed edge/angle constraints inside RoCo's representation of geometry. Then we will input the edge/angle constraints into Sympy which will output edge lengths and coordinates. Then we will input edge lengths/angles into a BFS-style algorithm to generate vertex coordinates.
+    *   The first version of RoCo relied on an algorithm which took edge/angle/system constraints as input and output nonlinear equations for each vertex coordinate. This resulted in a system of 10^2 nonlinear equations for very simple robots, growing exponentially; thus, it is infeasible to solve at this time.
 
 *   Geometry Generation
 
-    *   It is not clear whether it is better to compose 3D object from many polygons or to create parameterized 3D objects as a primitive.
+    *   It is not clear whether it is better to compose 3D object from many polygons or to create parameterized 3D objects as a primitive. 3D objects composed of many polygons will have issues of defining rotations between faces and composing 3D objects together. A parameterized 3D object primitive will have issues of how to specify all interior angles in a reasonable fashion; this is unlike how to denote all interior angles of a parameterized 2D object because a 2D object always has equal number of angles and sides.
 
-    *   3D object from many polygons will have issues of defining the rotation of one face relative to another face.
+    *   It will be difficult to implement this using vertex groups because if we only select the vertices which represent the edge (say, the center edge of a 3subdivided cube), then arbitrarily set this group's length (using scale mechanisms), it will not work.
 
-    *   Parameterized 3D object primitive has issues of how to specify all interior angles in a reasonable fashion; this is unlike how to denote all interior angles of a parameterized 2D object because a 2D object always has equal number of angles and sides.
+    *   We cannot model the vertex as only a connection point of edges because we need to know where the vertex itself is (disconnected components will occur, so position matters).
 
-    *   3D object has edges and polygons. polygons are groups of edges
-
-    *   Difficult to implement this using vertex groups, because if we only select the vertices which represent the edge, then set this group's length to double (using scale mechanisms), and the object is a cube subdivided 3 with the group vertices being the center strip, it will not work.
-
-    *   Model vertex as only a connection point of edges, dont know where the vertex itself is, only know edge lengths and orientation of edge from relative to vertex
-
-    *   Vertex has list of (edge, angle) pairs. Angle is xyz rotation. edge is an object with a length and has list of vertices. when doing dfs to get vertices, maintain knowledge of angle. 
-
-    *   a lot of these approaches have problem of not knowing what is a face and what isnt.
+    *   We cannot use only a skeleton representation of the mesh because we need to know where the faces are.
 
 *   Parameterization
 
-    *   Parameterization in RoCo was previously treated at the Component level (affecting geometry, electronics, and software).
-
-    *   Parameterization is only relevant for geometry because circuits will not be customized by users and software is inherently parameterized.
+    *   Parameterization in RoCo was previously treated at the Component level (affecting geometry, electronics, and software). Parameterization is only relevant for geometry because circuits will not be customized by users and software is inherently parameterized.
 
 Architectural Model
 =============================
@@ -256,7 +274,6 @@ Architectural Model
 
 Abstraction Model
 =============================
-
 *   Supercomponent: the new object being constructed
 
     *   Component: a configurable objects 
@@ -385,7 +402,6 @@ Implementation Model
 
 Resources and Examples
 =============================
-
 *   Parameterized Blender
 
     *   Sverchok_ 
