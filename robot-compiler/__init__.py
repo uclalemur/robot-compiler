@@ -6,7 +6,7 @@ bl_info = {
     "author": "UCLA LEMUR",
     "version": (0, 0, 1),
     "blender": (2, 79, 0),
-    "location": "View3D > Properties > Measure",
+    "location": "",
     "warning": "", 
     "wiki_url": "",
     "tracker_url": "",
@@ -16,85 +16,52 @@ bl_info = {
 
 
 # TODO: pass pylint
-class RobotCompilerScreen(bpy.types.Operator):
+class RobotCompiler(bpy.types.Operator):
     bl_idname = "robot_compiler.screen"        # unique identifier for buttons and menu items to reference.
     bl_label = "Add Robot Compiler Screen"         # display name in the interface.
-    bl_options = {'REGISTER', 'UNDO'}  # enable undo for the operator.
+    bl_options = {'REGISTER', 'UNDO'}
 
-    # Adapted from https://blender.stackexchange.com/questions/63647/graphical-errors-while-changing-area-type-after-creating-a-new-screen/71646
-    def delete_areas(self):
-        override = bpy.context.copy()
-        new = bpy.ops.screen.new()
-        bpy.context.screen.name = "Robot Compiler"
-        
-        areas = []
-        for i in override['screen'].areas:
-            areas.append({'x': i.x, 'y': i.y, 'width': i.width, 'height': i.height})
 
-        def delete_area():
-            for i in range(0, len(areas)):
-                for j in range(i + 1, len(areas)):
-                    # up
-                    if areas[i]['x'] == areas[j]['x'] and areas[i]['width'] == areas[j]['width'] and areas[i]['y'] + areas[i]['height'] + 1 == areas[j]['y']:
-                        bpy.ops.screen.area_join(override, 
-                                                min_x = areas[i]['x']+1, 
-                                                min_y = areas[i]['y'], 
-                                                max_x = areas[j]['x']+1,  
-                                                max_y = areas[j]['y']+1)
-                        areas[i]['height'] = areas[i]['height'] + areas[j]['height'] + 1
-                        del areas[j]
-                        return
-                    # down
-                    if areas[i]['x'] == areas[j]['x'] and areas[i]['width'] == areas[j]['width'] and areas[j]['y'] + areas[j]['height'] + 1 == areas[i]['y']:
-                        bpy.ops.screen.area_join(override, 
-                                                min_x = areas[j]['x']+1, 
-                                                min_y = areas[j]['y'], 
-                                                max_x = areas[i]['x']+1,  
-                                                max_y = areas[i]['y']+1)
-                        areas[j]['height'] = areas[j]['height'] + areas[i]['height'] + 1
-                        del areas[i]
-                        return
-                    # right
-                    if areas[i]['y'] == areas[j]['y'] and areas[i]['height'] == areas[j]['height'] and areas[i]['x'] + areas[i]['width'] + 1 == areas[j]['x']:
-                        bpy.ops.screen.area_join(override, 
-                                                min_x = areas[i]['x']+1, 
-                                                min_y = areas[i]['y'], 
-                                                max_x = areas[j]['x']+1,  
-                                                max_y = areas[j]['y']+1)
-                        areas[i]['width'] = areas[i]['width'] + areas[j]['width'] + 1
-                        del areas[j]
-                        return
-                    # left
-                    if areas[i]['y'] == areas[j]['y'] and areas[i]['height'] == areas[j]['height'] and areas[j]['x'] + areas[j]['width'] + 1 == areas[i]['x']:
-                        bpy.ops.screen.area_join(override, 
-                                                min_x = areas[j]['x']+1, 
-                                                min_y = areas[j]['y'], 
-                                                max_x = areas[i]['x']+1,  
-                                                max_y = areas[i]['y']+1)
-                        areas[j]['width'] = areas[j]['width'] + areas[i]['width'] + 1
-                        del areas[i]
-                        return
+# Blender does not have a bpy.props.StringVectorProperty
+# and we cannot create a CollectionProperty of type bpy.props.StringProperty
+# so we create a wrapper
+class CustomStringProperty(bpy.types.PropertyGroup):
+    value = bpy.props.StringProperty()
 
-        while len(areas) > 1:
-            delete_area()
 
-    def execute(self, context):        # execute() is called by blender when running the operator.
-        curr_name = bpy.context.screen.name
-        self.delete_areas()
+# 
+class PolygonData(bpy.types.PropertyGroup):
+    # Immutable specifications
+    name = bpy.props.StringProperty()
+    num_sides = bpy.props.IntProperty()
 
-        bpy.data.screens[curr_name + ".001"].name = curr_name
-        bpy.data.screens['Robot Compiler'].areas[0].type = 'VIEW_3D'
-        #bpy.context.window.screen = bpy.data.screens['Robot Compiler']
+    #
+    side_names = bpy.props.CollectionProperty(type=CustomStringProperty)
+    angle_names = bpy.props.CollectionProperty(type=CustomStringProperty)
+    
 
-        return {'FINISHED'}            # this lets blender know the operator finished successfully.
+    #
+    side_constraints = bpy.props.CollectionProperty(type=CustomStringProperty)
+    angle_constraints = bpy.props.CollectionProperty(type=CustomStringProperty)
+    
+    # Mutable specifications, not sure if this shoudl be in persistent data or not
+    #sides = bpy.props.FloatVectorProperty()
+    #angles = bpy.props.FloatVectorProperty()
+    
+    #self.material = Material.paper
 
 
 def register():
-    bpy.utils.register_class(RobotCompilerScreen)
+    bpy.utils.register_class(RobotCompiler)
+    bpy.utils.register_class(CustomStringProperty)
+    bpy.utils.register_class(PolygonData)
+    bpy.types.Object.polygon_data = bpy.props.PointerProperty(type=PolygonData)
 
 
 def unregister():
-    bpy.utils.unregister_class(RobotCompilerScreen)
+    bpy.utils.unregister_class(RobotCompiler)
+    bpy.utils.unregister_class(CustomStringProperty)
+    bpy.utils.unregister_class(PolygonData)
 
 
 # This allows you to run the script directly from blenders text editor

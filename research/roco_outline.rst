@@ -495,6 +495,10 @@ FAQ
 
         cd /Users/quentintruong/Library/Application\ Support/Blender/2.79/config
 
+*   Where are addons located?::
+        
+        /Applications/Blender/blender.app/Contents/Resources/2.79/scripts/addons
+
 Blender API Tips
 =============================
 *   bpy.data.objects.keys() # list of all available objects
