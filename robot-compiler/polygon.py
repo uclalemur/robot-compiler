@@ -1,3 +1,4 @@
+# TODO: Minimize imports
 # Python Imports
 from enum import Enum
 
@@ -6,12 +7,11 @@ import bpy
 import bmesh
 import mathutils
 from mathutils import Vector
-from math import degrees, pi
 
 # Library Imports
 from sympy import *
 from sympy.parsing.sympy_parser import parse_expr
-from math import *
+import math
 import numpy
 
 class Material(Enum):
@@ -188,7 +188,7 @@ class Polygon():
         y = curr_vertex[1] + sin(angle_from_x) * self.sides[self.num_sides - 1]
         z = curr_vertex[2] + 0
         
-        if not isclose(x, self.vertices[0][0], abs_tol=1e-10) or not isclose(y, self.vertices[0][1], abs_tol=1e-10) or not isclose(z, self.vertices[0][2], abs_tol=1e-10):
+        if not math.isclose(x, self.vertices[0][0], abs_tol=1e-10) or not math.isclose(y, self.vertices[0][1], abs_tol=1e-10) or not math.isclose(z, self.vertices[0][2], abs_tol=1e-10):
             print("Constraints not solvable")
             return False
 
@@ -253,9 +253,9 @@ class Polygon():
         
         return vertex_a, vertex_b
 
-    def connect(self, other, my_side_name, other_side_name):
+    def connect(self, other, my_side_name, other_side_name, angle):
         # Move center of other.other_side_name to center of self.my_side_name
-        # TODO: Clean up this messy code
+        # TODO: Break out into a utils method
         # TODO: Make it work for different orientations
         # TODO: Decide on whether we want scaling or to propagate it
 
@@ -272,13 +272,15 @@ class Polygon():
         
         other.object.rotation_euler[2] = poly_vector.xy.angle_signed(other_vector.xy, 0.0)
 
-        bpy.data.objects[other.name].location[0] = (poly_v0[0] + poly_v1[0]) / 2
-        bpy.data.objects[other.name].location[1] = (poly_v0[1] + poly_v1[1]) / 2
-        bpy.data.objects[other.name].location[2] = (poly_v0[2] + poly_v1[2]) / 2
+        other.object.location[0] = (poly_v0[0] + poly_v1[0]) / 2
+        other.object.location[1] = (poly_v0[1] + poly_v1[1]) / 2
+        other.object.location[2] = (poly_v0[2] + poly_v1[2]) / 2
 
-        bpy.data.objects[other.name].scale[0] = poly_vector.magnitude / other_vector.magnitude
-        bpy.data.objects[other.name].scale[1] = poly_vector.magnitude / other_vector.magnitude
-        bpy.data.objects[other.name].scale[2] = poly_vector.magnitude / other_vector.magnitude
+        other.object.scale[0] = poly_vector.magnitude / other_vector.magnitude
+        other.object.scale[1] = poly_vector.magnitude / other_vector.magnitude
+        other.object.scale[2] = poly_vector.magnitude / other_vector.magnitude
+        
+        other.object.rotation_euler[0] = math.radians(angle)
         
         self.clean_up()
 
@@ -294,15 +296,15 @@ if __name__ == '__main__':
             poly.clean_up()
     """
     
-    poly = Polygon("poly7", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
-    poly.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
-    if poly.solve_geometry():
-        if poly.generate_vertices():
-            poly.generate_bmesh()
-            poly.link_mesh()
-            poly.clean_up()
+    poly_a = Polygon("square1", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_a.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    if poly_a.solve_geometry():
+        if poly_a.generate_vertices():
+            poly_a.generate_bmesh()
+            poly_a.link_mesh()
+            poly_a.clean_up()
     
-    poly_b = Polygon("poly_b", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_b = Polygon("square2", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
     poly_b.set_constraints(["1", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
     if poly_b.solve_geometry():
         if poly_b.generate_vertices():
@@ -334,10 +336,10 @@ if __name__ == '__main__':
             poly_e.link_mesh()
             poly_e.clean_up()        
     
-    poly.connect(poly_b, poly.side_names[0], poly_b.side_names[0])
-    poly.connect(poly_c, poly.side_names[1], poly_c.side_names[0])
-    poly.connect(poly_d, poly.side_names[2], poly_d.side_names[0])
-    poly.connect(poly_e, poly.side_names[3], poly_e.side_names[0])
+    poly_c.connect(poly_b, poly_c.side_names[0], poly_b.side_names[0], -20)
+    poly_c.connect(poly_a, poly_c.side_names[1], poly_a.side_names[0], 30)
+    poly_c.connect(poly_d, poly_c.side_names[2], poly_d.side_names[0], 40)
+    poly_c.connect(poly_e, poly_c.side_names[3], poly_e.side_names[0], 60)
 
     """
 

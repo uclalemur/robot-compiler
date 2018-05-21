@@ -8,16 +8,46 @@ import time
 """
 (Run on a Macbook Air 2016)
 Trials: 5000
-Sympy solve(): 0.013043633413314819
-Sympy nonlinsolve(): 0.06551389598846435
-Sympy LUsolve(): 0.0007110137939453125
-Numpy linalg.solve(): 2.0845413208007813e-05
+Polygon: 0.0768296766281128
+Sympy 8eq solve(): 0.0430738639831543
+Sympy solve(): 0.014581542015075683
+Sympy nonlinsolve(): 0.07651357650756836
+Sympy LUsolve(): 0.005532379150390625
+Numpy linalg.solve(): 2.669811248779297e-05
 """
 
 
 if __name__ == '__main__':
-    trials = 5000
+    trials = 50
     print("Trials: " + str(trials))
+    
+    start = time.time()
+    for i in range(0, int(trials)):
+        poly = Polygon("poly" + str(i), ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+        poly.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+        if poly.solve_geometry():
+            if poly.generate_vertices():
+                poly.generate_bmesh()
+                poly.link_mesh()
+                poly.clean_up()
+    elapsed_time = (time.time() - start) / (trials)
+    print("Polygon: " + str(elapsed_time))
+    
+    start = time.time()
+    for i in range(0,trials):
+        constraints =   [parse_expr("52-a"),
+                         parse_expr("a-b"),
+                         parse_expr("a-c"),
+                         parse_expr("a-d"),
+                         parse_expr("pi/2-ab"),
+                         parse_expr("ab-bc"),
+                         parse_expr("ab-cd"),
+                         parse_expr("ab-da"),]
+        variables = [Symbol("a"), Symbol("b"), Symbol("c"), Symbol("d"),
+                    Symbol("ab"), Symbol("bc"), Symbol("cd"), Symbol("da")]
+        solve(constraints, variables, dict=True)
+    elapsed_time = (time.time() - start) / trials
+    print("Sympy 8eq solve(): " + str(elapsed_time))
 
 
     start = time.time()
