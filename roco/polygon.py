@@ -64,47 +64,34 @@ class Polygon():
         # Persistent data
         self.polygon_data = None
 
-        # Get existing object, if possible, otherwise create one and link to scene
-        self.get_object()
-
-        # Get existing polygon_data, if possible
-        self.get_polygon_data()
-
-
-    def get_object(self):
-        if self.name in bpy.data.objects.keys():
-            print("get_object 1")
-            self.mesh = bpy.data.objects[self.name].data
-            self.object = bpy.data.objects[self.name]
-            return
-
-        print("get_object 2")
+    def create_object(self):
+        print("create_object()")
         self.mesh = bpy.data.meshes.new("{0}_{1}".format(self.name, "mesh"))
         self.object = bpy.data.objects.new(self.name, self.mesh)
         bpy.context.scene.objects.link(self.object)
-
-    def get_polygon_data(self):
-        if self.object.polygon_data.name == self.name:
-            print("get_polygon_data 1")
-           
-            self.polygon_data = self.object.polygon_data
-            
-            self.name = self.polygon_data.name
-            self.num_sides = self.polygon_data.num_sides
-            
-            self.side_names = self.get_vector(self.polygon_data.side_names)
-            self.angle_names = self.get_vector(self.polygon_data.angle_names) 
-            
-            self.side_symbols = self.create_symbols(self.side_names);
-            self.angle_symbols = self.create_symbols(self.angle_names);
-            
-            self.set_constraints(self.get_vector(self.polygon_data.side_constraints),
-                                self.get_vector(self.polygon_data.angle_constraints))
-            
-            return
         
-        print("get_polygon_data 2")
+        self.name = self.object.name
+
         self.polygon_data = self.object.polygon_data
+
+    def wake_object(self):
+        print("wake_object()")
+        self.mesh = bpy.data.objects[self.name].data
+        self.object = bpy.data.objects[self.name]
+
+        self.polygon_data = self.object.polygon_data
+        
+        self.name = self.polygon_data.name
+        self.num_sides = self.polygon_data.num_sides
+        
+        self.side_names = self.get_vector(self.polygon_data.side_names)
+        self.angle_names = self.get_vector(self.polygon_data.angle_names) 
+        
+        self.side_symbols = self.create_symbols(self.side_names);
+        self.angle_symbols = self.create_symbols(self.angle_names);
+        
+        self.set_constraints(self.get_vector(self.polygon_data.side_constraints),
+                            self.get_vector(self.polygon_data.angle_constraints))
 
     def set_vector(self, collection, values):
         collection.clear()
@@ -192,9 +179,6 @@ class Polygon():
             print("Constraints not solvable")
             return False
 
-        #for vertex in self.vertices:
-        #    print(vertex)
-
         return True
 
     def generate_bmesh(self):
@@ -208,7 +192,7 @@ class Polygon():
         [self.bmesh.verts.new(co) for co in self.vertices]
         self.bmesh.verts.index_update()
         self.bmesh.verts.ensure_lookup_table()
-
+        
         if self.faces:
             for face in self.faces:
                 self.bmesh.faces.new(tuple(self.bmesh.verts[i] for i in face))
@@ -244,12 +228,12 @@ class Polygon():
         self.set_vector(self.polygon_data.angle_names, self.angle_names)
         self.set_vector(self.polygon_data.side_constraints, self.side_constraints)        
         self.set_vector(self.polygon_data.angle_constraints, self.angle_constraints)
-        
     
     def side_name_to_vertices(self, side_name):
         # TODO: index checking
-        vertex_a = self.vertices[self.side_names.index(side_name)]
-        vertex_b = self.vertices[(self.side_names.index(side_name) + 1) % len(self.side_names)]
+
+        vertex_a = self.object.matrix_world * self.bmesh.verts[self.side_names.index(side_name)].co
+        vertex_b = self.object.matrix_world * self.bmesh.verts[(self.side_names.index(side_name) + 1) % len(self.side_names)].co
         
         return vertex_a, vertex_b
 
@@ -267,8 +251,8 @@ class Polygon():
         bpy.context.scene.cursor_location = ((other_v0[0] + other_v1[0]) /2, (other_v0[1] + other_v1[1]) / 2, (other_v0[2] + other_v1[2]) / 2)
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
 
-        poly_vector = Vector(tuple(numpy.subtract(poly_v0, poly_v1)))
-        other_vector = Vector(tuple(numpy.subtract(other_v1, other_v0)))
+        poly_vector = Vector(numpy.subtract(poly_v1, poly_v0))
+        other_vector = Vector(numpy.subtract(other_v1, other_v0))
         
         other.object.rotation_euler[2] = poly_vector.xy.angle_signed(other_vector.xy, 0.0)
 
@@ -282,29 +266,88 @@ class Polygon():
         
         other.object.rotation_euler[0] = math.radians(angle)
         
+        bpy.context.scene.cursor_location = poly_v0
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+
         self.clean_up()
 
 
 if __name__ == '__main__':
-    """
     # Regenerate from existing object
-    poly = Polygon("poly7", [], [])
-    if poly.solve_geometry():
-        if poly.generate_vertices():
-            poly.generate_bmesh()
-            poly.link_mesh()
-            poly.clean_up()
+    
+    """
+    poly_a = Polygon("square", [], [])
+    poly_a.wake_object()
+    if poly_a.solve_geometry():
+        if poly_a.generate_vertices():
+            poly_a.generate_bmesh()
+            poly_a.link_mesh()
+            poly_a.clean_up()
     """
     
-    poly_a = Polygon("square1", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_a = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_a.create_object()
     poly_a.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
     if poly_a.solve_geometry():
         if poly_a.generate_vertices():
             poly_a.generate_bmesh()
             poly_a.link_mesh()
             poly_a.clean_up()
+            
+    poly_b = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_b.create_object()
+    poly_b.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    if poly_b.solve_geometry():
+        if poly_b.generate_vertices():
+            poly_b.generate_bmesh()
+            poly_b.link_mesh()
+            poly_b.clean_up()
+            
+    poly_c = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_c.create_object()
+    poly_c.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    if poly_c.solve_geometry():
+        if poly_c.generate_vertices():
+            poly_c.generate_bmesh()
+            poly_c.link_mesh()
+            poly_c.clean_up()
+            
+    poly_d = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_d.create_object()
+    poly_d.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    if poly_d.solve_geometry():
+        if poly_d.generate_vertices():
+            poly_d.generate_bmesh()
+            poly_d.link_mesh()
+            poly_d.clean_up()
+            
+    poly_e = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_e.create_object()
+    poly_e.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    if poly_e.solve_geometry():
+        if poly_e.generate_vertices():
+            poly_e.generate_bmesh()
+            poly_e.link_mesh()
+            poly_e.clean_up()
     
+    poly_f = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_f.create_object()
+    poly_f.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    if poly_f.solve_geometry():
+        if poly_f.generate_vertices():
+            poly_f.generate_bmesh()
+            poly_f.link_mesh()
+            poly_f.clean_up()
+    
+    poly_a.connect(poly_b, poly_a.side_names[0], poly_b.side_names[0], 120)
+    poly_a.connect(poly_c, poly_a.side_names[1], poly_c.side_names[0], 120)
+    poly_a.connect(poly_d, poly_a.side_names[2], poly_d.side_names[0], 120)
+    poly_a.connect(poly_e, poly_a.side_names[3], poly_e.side_names[0], 120)
+    poly_b.connect(poly_f, poly_b.side_names[2], poly_f.side_names[0], 120)
+    
+    """
     poly_b = Polygon("square2", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_b.create_object()
     poly_b.set_constraints(["1", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
     if poly_b.solve_geometry():
         if poly_b.generate_vertices():
@@ -313,6 +356,7 @@ if __name__ == '__main__':
             poly_b.clean_up()
             
     poly_c = Polygon("quad_trap", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_c.create_object()
     poly_c.set_constraints(["2.5", "2*a", "a", "b-2*a*sin(cd-pi/2)"], ["pi/3", "ab", "pi-ab", "cd"])
     if poly_c.solve_geometry():
         if poly_c.generate_vertices():
@@ -321,6 +365,7 @@ if __name__ == '__main__':
             poly_c.clean_up()
             
     poly_d = Polygon("triangle_345", ["a", "b", "c"], ["ab", "bc", "ca"])
+    poly_d.create_object()
     poly_d.set_constraints(["3", "4", "5"], ["pi/2", "atan(a/b)", "pi-ab-bc"])
     if poly_d.solve_geometry():
         if poly_d.generate_vertices():
@@ -329,6 +374,7 @@ if __name__ == '__main__':
             poly_d.clean_up()
             
     poly_e = Polygon("quad_rhombus", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_e.create_object()
     poly_e.set_constraints(["1", "a", "a", "b"], ["pi/3", "pi-ab", "ab", "bc"])
     if poly_e.solve_geometry():
         if poly_e.generate_vertices():
@@ -340,9 +386,10 @@ if __name__ == '__main__':
     poly_c.connect(poly_a, poly_c.side_names[1], poly_a.side_names[0], 30)
     poly_c.connect(poly_d, poly_c.side_names[2], poly_d.side_names[0], 40)
     poly_c.connect(poly_e, poly_c.side_names[3], poly_e.side_names[0], 60)
-
+    
     """
-
+    
+    """
     poly = Polygon("triangle_345", ["a", "b", "c"], ["ab", "bc", "ca"])
     poly.set_constraints(["3", "4", "5"], ["pi/2", "atan(a/b)", "pi-ab-bc"])
     if poly.solve_geometry():
@@ -390,6 +437,5 @@ if __name__ == '__main__':
             poly.generate_bmesh()
             poly.link_mesh()
             poly.clean_up()
-
-    #nonlinsolve([parse_expr("a-b"), parse_expr("c-(a**2+b**2)**(1/2)"), parse_expr("c-1")], [a, b, c])
     """
+    #nonlinsolve([parse_expr("a-b"), parse_expr("c-(a**2+b**2)**(1/2)"), parse_expr("c-1")], [a, b, c])

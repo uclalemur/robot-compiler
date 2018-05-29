@@ -1,4 +1,5 @@
 import bpy
+from roco import polygon
 
 bl_info = {
     "name": "Robot Compiler",
@@ -18,7 +19,7 @@ bl_info = {
 # TODO: pass pylint
 class RobotCompiler(bpy.types.Operator):
     bl_idname = "robot_compiler.screen"        # unique identifier for buttons and menu items to reference.
-    bl_label = "Add Robot Compiler Screen"         # display name in the interface.
+    bl_label = "Robot Compiler"         # display name in the interface.
     bl_options = {'REGISTER', 'UNDO'}
 
 

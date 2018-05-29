@@ -178,17 +178,29 @@ Alternative Approaches
 =============================
 *   Geometry Generation
 
-    *   The first version of RoCo relied on an algorithm which took edge/angle/system constraints as input and output nonlinear equations for each vertex coordinate. This resulted in a system of 10^2 nonlinear equations for very simple robots, growing exponentially; thus, it is infeasible to solve at this time.
+    *   Why not define equations and relationships between every vertex? This would have the advantages of a fully functional description of the robot and make composition simple.
 
-*   Geometry Generation
+        *   The first version of RoCo relied on an algorithm which took edge/angle/system constraints as input and output nonlinear equations for each vertex coordinate. This resulted in a system of 10^2 nonlinear equations for very simple robots, with an exponential growth rate. It is infeasible to quickly solve these equations.
 
-    *   It is not clear whether it is better to compose 3D object from many polygons or to create parameterized 3D objects as a primitive. 3D objects composed of many polygons will have issues of defining rotations between faces and composing 3D objects together. A parameterized 3D object primitive will have issues of how to specify all interior angles in a reasonable fashion; this is unlike how to denote all interior angles of a parameterized 2D object because a 2D object always has equal number of angles and sides.
+    *   Why not use parameterized 3D objects as primitives?
 
-    *   It will be difficult to implement this using vertex groups because if we only select the vertices which represent the edge (say, the center edge of a 3subdivided cube), then arbitrarily set this group's length (using scale mechanisms), it will not work.
+        *   A parameterized 3D object will have issues regarding specifying and manipulating attributes, such as internal angles.
 
-    *   We cannot model the vertex as only a connection point of edges because we need to know where the vertex itself is (disconnected components will occur, so position matters).
+    *   Why not rely on boolean operators to compose 3D objects?
 
-    *   We cannot use only a skeleton representation of the mesh because we need to know where the faces are.
+        *   Degenerate geometry and parameterization.
+
+    *   Why not rely on vertex groups to implement 2D/3D parameterization (systematically scale groups of edges as desired, without using equations)? This would solve the issues of having to track the full functional description.
+
+        *   Basically, the issue is that it is infeasible to specify what does and does not grow. For example, say you want to double the length of the center edge of a 3-subdivided cube. The system would need to know whether to grow the adjacent sidelengths or to move the sides. This gets more complicated as more polygons are added.
+
+    *   Why not model the vertex as only a connection point between edges? This seems to simplify parameterization.
+
+        *   The actual position of vertices (relative to the origin) is relevant because of disconnected components. For example, the wheel of a robot may not actually be connected, but still needs to be positioned next to the servo.
+
+    *   Why not use a skeleton representation of the mesh?
+
+        *   We need to discern between open and closed faces.
 
 *   Parameterization
 
