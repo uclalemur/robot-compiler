@@ -1,3 +1,5 @@
+# TODO: Add license and author info
+
 import bpy
 from roco import polygon
 
@@ -53,16 +55,12 @@ class PolygonData(bpy.types.PropertyGroup):
 
 
 def register():
-    bpy.utils.register_class(RobotCompiler)
-    bpy.utils.register_class(CustomStringProperty)
-    bpy.utils.register_class(PolygonData)
+    bpy.utils.register_module(__name__)
     bpy.types.Object.polygon_data = bpy.props.PointerProperty(type=PolygonData)
 
 
 def unregister():
-    bpy.utils.unregister_class(RobotCompiler)
-    bpy.utils.unregister_class(CustomStringProperty)
-    bpy.utils.unregister_class(PolygonData)
+    bpy.utils.unregister_module(__name__)
 
 
 # This allows you to run the script directly from blenders text editor

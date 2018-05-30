@@ -237,39 +237,61 @@ class Polygon():
         
         return vertex_a, vertex_b
 
-    def connect(self, other, my_side_name, other_side_name, angle):
-        # Move center of other.other_side_name to center of self.my_side_name
-        # TODO: Break out into a utils method
-        # TODO: Make it work for different orientations
-        # TODO: Decide on whether we want scaling or to propagate it
+    def connect(self, oth, my_side_name, other_side_name, angle):
+        # TODO: break out into utils
+        print("connect()")
+        base = bpy.data.objects[self.name]
+        other = bpy.data.objects[oth.name]
 
-        other.object.select = True
+        base.select = False
+        other.select = False
+
+        base.select = True
+        bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+        base.select = False
+
+        other.select = True
+        bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+        other.select = False
+
+        v0 = base.matrix_world * base.data.vertices[self.side_names.index(my_side_name)].co
+        v1 = base.matrix_world * base.data.vertices[(self.side_names.index(my_side_name) + 1) % len(self.side_names)].co
+        v01 = Vector(numpy.subtract(v1,v0))
+
+        o0 = other.matrix_world * other.data.vertices[oth.side_names.index(other_side_name)].co
+        o1 = other.matrix_world * other.data.vertices[(oth.side_names.index(other_side_name) + 1) % len(oth.side_names)].co
+        o01 = Vector(numpy.subtract(o1, o0))
+
+        # Orient Plane
+        base.rotation_mode = 'QUATERNION'
+        other.rotation_mode = 'QUATERNION'
+        other.rotation_quaternion = base.rotation_quaternion
         
-        poly_v0, poly_v1 = self.side_name_to_vertices(my_side_name)
-        other_v0, other_v1 = other.side_name_to_vertices(other_side_name)
-
-        bpy.context.scene.cursor_location = ((other_v0[0] + other_v1[0]) /2, (other_v0[1] + other_v1[1]) / 2, (other_v0[2] + other_v1[2]) / 2)
+        # Prepare COG
+        bpy.context.scene.update()
+        o0 = other.matrix_world * other.data.vertices[oth.side_names.index(other_side_name)].co
+        o1 = other.matrix_world * other.data.vertices[(oth.side_names.index(other_side_name) + 1) % len(oth.side_names)].co
+        bpy.context.scene.cursor_location = (o0 + o1) / 2
+        other.select = True
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
 
-        poly_vector = Vector(numpy.subtract(poly_v1, poly_v0))
-        other_vector = Vector(numpy.subtract(other_v1, other_v0))
-        
-        other.object.rotation_euler[2] = poly_vector.xy.angle_signed(other_vector.xy, 0.0)
+        # Location
+        other.location = (v0 + v1) / 2
 
-        other.object.location[0] = (poly_v0[0] + poly_v1[0]) / 2
-        other.object.location[1] = (poly_v0[1] + poly_v1[1]) / 2
-        other.object.location[2] = (poly_v0[2] + poly_v1[2]) / 2
+        # Refresh o01 vector
+        bpy.context.scene.update()
+        o0 = other.matrix_world * other.data.vertices[oth.side_names.index(other_side_name)].co
+        o1 = other.matrix_world * other.data.vertices[(oth.side_names.index(other_side_name) + 1) % len(oth.side_names)].co
+        o01 = Vector(numpy.subtract(o1, o0))
 
-        other.object.scale[0] = poly_vector.magnitude / other_vector.magnitude
-        other.object.scale[1] = poly_vector.magnitude / other_vector.magnitude
-        other.object.scale[2] = poly_vector.magnitude / other_vector.magnitude
-        
-        other.object.rotation_euler[0] = math.radians(angle)
-        
-        bpy.context.scene.cursor_location = poly_v0
-        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        # Orient vector
+        other.rotation_quaternion = o01.rotation_difference(v01) * other.rotation_quaternion
 
-        self.clean_up()
+        # Scaling
+        other.scale = Vector((v01.magnitude / o01.magnitude, v01.magnitude / o01.magnitude, v01.magnitude / o01.magnitude))
+
+        # Pivot
+        other.rotation_quaternion = mathutils.Matrix.Rotation(math.radians(angle), 4, v01).to_quaternion() * other.rotation_quaternion
 
 
 if __name__ == '__main__':
@@ -287,14 +309,14 @@ if __name__ == '__main__':
     
     poly_a = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
     poly_a.create_object()
-    poly_a.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    poly_a.set_constraints(["3", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
     if poly_a.solve_geometry():
         if poly_a.generate_vertices():
             poly_a.generate_bmesh()
             poly_a.link_mesh()
             poly_a.clean_up()
             
-    poly_b = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_b = Polygon("square.001", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
     poly_b.create_object()
     poly_b.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
     if poly_b.solve_geometry():
@@ -302,140 +324,67 @@ if __name__ == '__main__':
             poly_b.generate_bmesh()
             poly_b.link_mesh()
             poly_b.clean_up()
-            
-    poly_c = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+       
+    poly_c = Polygon("triangle_345", ["a", "b", "c"], ["ab", "bc", "ca"])
     poly_c.create_object()
-    poly_c.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    poly_c.set_constraints(["3", "4", "5"], ["pi/2", "atan(a/b)", "pi-ab-bc"])
     if poly_c.solve_geometry():
         if poly_c.generate_vertices():
             poly_c.generate_bmesh()
             poly_c.link_mesh()
             poly_c.clean_up()
-            
-    poly_d = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    
+    poly_d = Polygon("triangle_aab", ["a", "b", "c"], ["ab", "bc", "ca"])
     poly_d.create_object()
-    poly_d.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
+    poly_d.set_constraints(["5", "a", "(a**2+b**2)**(1/2)"], ["pi/2", "atan(a/b)", "pi-ab-bc"])
     if poly_d.solve_geometry():
         if poly_d.generate_vertices():
             poly_d.generate_bmesh()
             poly_d.link_mesh()
             poly_d.clean_up()
             
-    poly_e = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
-    poly_e.create_object()
-    poly_e.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
-    if poly_e.solve_geometry():
-        if poly_e.generate_vertices():
-            poly_e.generate_bmesh()
-            poly_e.link_mesh()
-            poly_e.clean_up()
-    
-    poly_f = Polygon("square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
-    poly_f.create_object()
-    poly_f.set_constraints(["2", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
-    if poly_f.solve_geometry():
-        if poly_f.generate_vertices():
-            poly_f.generate_bmesh()
-            poly_f.link_mesh()
-            poly_f.clean_up()
-    
-    poly_a.connect(poly_b, poly_a.side_names[0], poly_b.side_names[0], 120)
-    poly_a.connect(poly_c, poly_a.side_names[1], poly_c.side_names[0], 120)
-    poly_a.connect(poly_d, poly_a.side_names[2], poly_d.side_names[0], 120)
-    poly_a.connect(poly_e, poly_a.side_names[3], poly_e.side_names[0], 120)
-    poly_b.connect(poly_f, poly_b.side_names[2], poly_f.side_names[0], 120)
-    
-    """
-    poly_b = Polygon("square2", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
-    poly_b.create_object()
-    poly_b.set_constraints(["1", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
-    if poly_b.solve_geometry():
-        if poly_b.generate_vertices():
-            poly_b.generate_bmesh()
-            poly_b.link_mesh()
-            poly_b.clean_up()
-            
-    poly_c = Polygon("quad_trap", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
-    poly_c.create_object()
-    poly_c.set_constraints(["2.5", "2*a", "a", "b-2*a*sin(cd-pi/2)"], ["pi/3", "ab", "pi-ab", "cd"])
-    if poly_c.solve_geometry():
-        if poly_c.generate_vertices():
-            poly_c.generate_bmesh()
-            poly_c.link_mesh()
-            poly_c.clean_up()
-            
-    poly_d = Polygon("triangle_345", ["a", "b", "c"], ["ab", "bc", "ca"])
-    poly_d.create_object()
-    poly_d.set_constraints(["3", "4", "5"], ["pi/2", "atan(a/b)", "pi-ab-bc"])
-    if poly_d.solve_geometry():
-        if poly_d.generate_vertices():
-            poly_d.generate_bmesh()
-            poly_d.link_mesh()
-            poly_d.clean_up()
-            
-    poly_e = Polygon("quad_rhombus", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_e = Polygon("rhombus", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
     poly_e.create_object()
     poly_e.set_constraints(["1", "a", "a", "b"], ["pi/3", "pi-ab", "ab", "bc"])
     if poly_e.solve_geometry():
         if poly_e.generate_vertices():
             poly_e.generate_bmesh()
             poly_e.link_mesh()
-            poly_e.clean_up()        
+            poly_e.clean_up()
     
-    poly_c.connect(poly_b, poly_c.side_names[0], poly_b.side_names[0], -20)
-    poly_c.connect(poly_a, poly_c.side_names[1], poly_a.side_names[0], 30)
-    poly_c.connect(poly_d, poly_c.side_names[2], poly_d.side_names[0], 40)
-    poly_c.connect(poly_e, poly_c.side_names[3], poly_e.side_names[0], 60)
+    poly_f = Polygon("trapezoid", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_f.create_object()
+    poly_f.set_constraints(["2.5", "2*a", "a", "b-2*a*sin(cd-pi/2)"], ["pi/3", "ab", "pi-ab", "cd"])
+    if poly_f.solve_geometry():
+        if poly_f.generate_vertices():
+            poly_f.generate_bmesh()
+            poly_f.link_mesh()
+            poly_f.clean_up()
     
-    """
+    poly_g = Polygon("trapezoid", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_g.create_object()
+    poly_g.set_constraints(["2.5", "2*a", "a", "b-2*a*sin(cd-pi/2)"], ["pi/3", "ab", "pi-ab", "cd"])
+    if poly_g.solve_geometry():
+        if poly_g.generate_vertices():
+            poly_g.generate_bmesh()
+            poly_g.link_mesh()
+            poly_g.clean_up()
     
-    """
-    poly = Polygon("triangle_345", ["a", "b", "c"], ["ab", "bc", "ca"])
-    poly.set_constraints(["3", "4", "5"], ["pi/2", "atan(a/b)", "pi-ab-bc"])
-    if poly.solve_geometry():
-        if poly.generate_vertices():
-            poly.generate_bmesh()
-            poly.link_mesh()
-            poly.clean_up()
-            
-    poly = Polygon("triangle_aab", ["a", "b", "c"], ["ab", "bc", "ca"])
-    poly.set_constraints(["5", "a", "(a**2+b**2)**(1/2)"], ["pi/2", "atan(a/b)", "pi-ab-bc"])
-    if poly.solve_geometry():
-        if poly.generate_vertices():
-            poly.generate_bmesh()
-            poly.link_mesh()
-            poly.clean_up()
-            
-    poly = Polygon("quad_square", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
-    poly.set_constraints(["1", "a", "a", "a"], ["pi/2", "ab", "ab", "ab"])
-    if poly.solve_geometry():
-        if poly.generate_vertices():
-            poly.generate_bmesh()
-            poly.link_mesh()
-            poly.clean_up()
-            
-    poly = Polygon("quad_long", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
-    poly.set_constraints(["1.5", "2*a", "a", "b"], ["pi/2", "ab", "ab", "ab"])
-    if poly.solve_geometry():
-        if poly.generate_vertices():
-            poly.generate_bmesh()
-            poly.link_mesh()
-            poly.clean_up()
-            
-    poly = Polygon("quad_rhombus", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
-    poly.set_constraints(["2", "2*a", "a", "b"], ["pi/3", "pi-ab", "ab", "bc"])
-    if poly.solve_geometry():
-        if poly.generate_vertices():
-            poly.generate_bmesh()
-            poly.link_mesh()
-            poly.clean_up()
-            
-    poly = Polygon("quad_trap", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
-    poly.set_constraints(["2.5", "2*a", "a", "b-2*a*sin(cd-pi/2)"], ["pi/3", "ab", "pi-ab", "cd"])
-    if poly.solve_geometry():
-        if poly.generate_vertices():
-            poly.generate_bmesh()
-            poly.link_mesh()
-            poly.clean_up()
-    """
+    poly_h = Polygon("quad_long", ["a", "b", "c", "d"], ["ab", "bc", "cd", "da"])
+    poly_h.create_object()
+    poly_h.set_constraints(["1.5", "2*a", "a", "b"], ["pi/2", "ab", "ab", "ab"])
+    if poly_h.solve_geometry():
+        if poly_h.generate_vertices():
+            poly_h.generate_bmesh()
+            poly_h.link_mesh()
+            poly_h.clean_up()
+    
+    poly_a.connect(poly_b, poly_a.side_names[0], poly_b.side_names[0], 120)
+    poly_b.connect(poly_f, poly_b.side_names[2], poly_f.side_names[0], 150)
+    poly_f.connect(poly_g, poly_f.side_names[3], poly_g.side_names[3], 120)
+    poly_g.connect(poly_c, poly_g.side_names[1], poly_c.side_names[0], 60)
+    poly_c.connect(poly_d, poly_c.side_names[2], poly_d.side_names[2], 121)
+    poly_a.connect(poly_e, poly_a.side_names[1], poly_e.side_names[0], 180)
+    poly_a.connect(poly_h, poly_a.side_names[2], poly_h.side_names[3], -50)
+
     #nonlinsolve([parse_expr("a-b"), parse_expr("c-(a**2+b**2)**(1/2)"), parse_expr("c-1")], [a, b, c])
