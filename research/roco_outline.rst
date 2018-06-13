@@ -14,29 +14,19 @@ Contents
 
 `Abstraction Model`_
 
-`Implementation Model`_
-
 `Resources and Examples`_
 
 `FAQ`_
 
-`Blender API Tips`_
-
 Goal
 =============================
-*   Enable the general public to design and fabricate robots through automated processes
+*   End-to-end robotics codesign and fabrication environment to help the general public create their own custom robots
 
-    *   Codesign across multiple domains through a simple, visual UI 
+    *   Codesign multiple domains through a simple, visual UI 
 
-    *   Codesign using preconfigured, functionally defined objects
+    *   Create robots through composing hierarchical, preconfigured objects from a library of RoCo objects
 
-        *   If want a controllable robot, create a chassis and servos, it'll automatically add the microcontroller/network card and ensure the chassis is large enough
-
-    *   Fabricate through low-cost, accessible mediums with minimal assembly
-
-    *   Fabricate into multiple mediums using one design
-
-    *   Establish library of reusable, reconfigurable, modular robotic designs
+    *   Fabricate into multiple mediums from a single design through low-cost, accessible mediums with complete instructions and quick assembly
 
 Audience
 =============================
@@ -174,6 +164,18 @@ Related Works
 
     .. _Robogami: http://cfg.mit.edu/content/interactive-robogami-end-end-system-design-robots-ground-locomotion
 
+*   Pineal_
+    
+    .. _Pineal: https://dl.acm.org/citation.cfm?id=3025652
+
+*   NetGadgeteer_
+
+    .. _NetGadgeteer: https://www.microsoft.com/en-us/research/project/net-gadgeteer/
+
+*   RetroFab_
+
+    .. _RetroFab: https://www.autodeskresearch.com/publications/retrofab
+
 Alternative Approaches
 =============================
 *   Geometry Generation
@@ -226,7 +228,7 @@ Architectural Model
 
             *   Parameterization
 
-            *   Modifiers (cutouts)?
+            *   Modifiers (cutouts)
 
             *   Understanding of material
 
@@ -380,37 +382,6 @@ Abstraction Model
 
                 *   Dependencies: (libraries)
 
-Implementation Model
-=============================
-*   N-gon
-
-    *   Properties
-
-        *   Mechanical 
-
-            *   Blender internal geometry data (vertex position, object location/rotation, Blender’s vertex group...)
-
-            *   List of geometric features (edges, angles)
-
-            *   List of constraints
-
-    *   Interfaces
-
-        *   List of constraints
-
-*   Electroprogammatic
-
-*   Constraints
-
-    *   Edge Constraint
-
-    *   Angle Constraint
-    
-*   Interfaces
-
-    *   Supercomponent
-
-    *   Single Blender object
 
 Resources and Examples
 =============================
@@ -526,25 +497,3 @@ FAQ
 *   Where are addons located?::
         
         /Applications/Blender/blender.app/Contents/Resources/2.79/scripts/addons
-
-Blender API Tips
-=============================
-*   bpy.data.objects.keys() # list of all available objects
-
-*   bpy.data.objects['Cube'].select = True # selects 'Cube' object
-
-*   bpy.ops.object.editmode_toggle() # toggle edit mode
-
-*   bpy.ops.object.mode_set(mode='EDIT', toggle=False) # force edit mode
-
-*   bpy.ops.transform.resize(value = (1, 2, 3)) # scale currently selected item; should not be used for editing mesh
-
-*   bpy.context.object.data.update() # update data and view; if excluded, will not see update in 3D view until you click the 3D view
-
-*   bpy.data.screens['Scripting'].areas[1].type = 'VIEW_3D' # will change area type without need for context
-
-*   bpy.ops.wm.window_duplicate() # creates new screen and swaps to it
-
-*   py.utils.unregister_class(bpy.types.Panel.__subclasses__()[1]) # unregisters (hides) subpanels
-
-*   bpy.data.node_groups[NODETREENAME].nodes[0].custom_properties.int_value # to access custom properties in node
